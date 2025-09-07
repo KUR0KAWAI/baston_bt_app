@@ -1,16 +1,30 @@
-# baston_bt_app
+# 🚀 Aplicación baston_bt_app
 
-A new Flutter project.
+Un proyecto Flutter en desarrollo para un **bastón inteligente con Bluetooth**.
 
-## Getting Started
+## ✅ Estado del Proyecto
+- Actualización #2:
+    - Navegación funcional implementada
+    - Páginas básicas creadas: Inicio, Dispositivos, Cuidadores, Ubicación, Gestión del bastón
+    - Base de datos local lista con **SQLite encriptado**
+    - Seguridad añadida: clave de cifrado y módulo `secure.dart`
 
-This project is a starting point for a Flutter application.
+## 📌 Objetivo
+Desarrollar una aplicación móvil que permita a los usuarios gestionar:
+- Dispositivos conectados al bastón
+- Cuidadores asignados
+- Ubicación y zonas seguras
+- Botón de emergencia
 
-A few resources to get you started if this is your first Flutter project:
+## 🛠️ Tecnologías
+- Flutter
+- Dart
+- SQLite (encriptado)
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## 👥 Autores
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- **Kuro**  
+  Correo: dfoyainfo@fafi.utb.edu.ec
+
+- **Moi**  
+  Correo: alvaradomoises2004@gmail.com  
