@@ -2,6 +2,8 @@
 
 Un proyecto Flutter en desarrollo para un **bastón inteligente con Bluetooth**.
 
+📖 [Documentación Completa](./DOCUMENTACION.md)
+
 ## ✅ Estado del Proyecto
 - Actualización #2:
     - Navegación funcional implementada
