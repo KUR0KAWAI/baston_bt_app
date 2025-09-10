@@ -1,22 +1,38 @@
 import 'package:flutter/material.dart';
-import 'package:baston_bt_app/pages/inicio_page.dart';
+import 'pages/menu_layout.dart';
+import 'pages/login_page.dart';
+import 'services/db_bootstrap.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
-}
 
+  // ⬇️ LOG de BD tras el primer frame (no altera tu UI)
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    try {
+      await DbBootstrap.init();
+      await DbBootstrap.logDebugInfo(); // imprime BD, clave y tablas en consola
+    } catch (_) {/*silencio en prod*/}
+  });
+}
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Bastón BT App',
+      debugShowCheckedModeBanner: false,
+      title: 'PathSense',
       theme: ThemeData(
-        primarySwatch: Colors.deepPurple,
         useMaterial3: true,
+        primarySwatch: Colors.deepPurple,
       ),
-      home: const InicioPage(), // <- Aquí cargamos nuestra pantalla de inicio
+      initialRoute: '/menu',
+      routes: {
+        '/login': (context) => const LoginPage(),
+        '/menu': (context) => const MenuLayout(),
+      },
     );
   }
 }
+

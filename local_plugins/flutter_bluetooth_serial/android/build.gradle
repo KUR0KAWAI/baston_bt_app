@@ -1,0 +1,44 @@
+// local_plugins/flutter_bluetooth_serial/android/build.gradle
+group 'io.github.edufolly.flutterbluetoothserial'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'com.android.library'
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()  // antes jcenter()
+    }
+    // Esta línea no es crítica (Flutter inyecta su AGP), pero la dejamos moderna
+    dependencies { classpath 'com.android.tools.build:gradle:8.0.2' }
+}
+
+rootProject.allprojects {
+    repositories {
+        google()
+        mavenCentral()  // antes jcenter()
+    }
+}
+
+android {
+    compileSdkVersion 34
+    defaultConfig {
+        minSdkVersion 21
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    lintOptions { disable 'InvalidPackage' }
+
+    // ⚠️ IMPORTANTE: debe coincidir con el package del Manifest del plugin.
+    // Abre local_plugins/flutter_bluetooth_serial/android/src/main/AndroidManifest.xml
+    // y copia el valor de package="...".
+    // Normalmente es:
+    namespace "io.github.edufolly.flutterbluetoothserial"
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+}

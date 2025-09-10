@@ -31,9 +31,24 @@ dependencies:
   flutter:
     sdk: flutter
 
+  http: ^1.1.0
+
+  flutter_map: ^6.1.0
+  latlong2: ^0.9.0
+  geolocator: ^11.0.0
+
+  flutter_blue_plus: ^1.32.11
+  flutter_bluetooth_serial:
+    path: local_plugins/flutter_bluetooth_serial
+  permission_handler: ^11.3.1
+  app_settings: ^5.1.1
+
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  google_fonts: ^6.1.0     # Tipografía moderna
+  flutter_svg: ^2.0.7      # Para íconos SVG si los usarás
+
 
   # Seguridad y BD cifrada
   flutter_secure_storage: ^9.2.2
@@ -63,6 +78,8 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  assets:
+    - assets/images/logo.png
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
