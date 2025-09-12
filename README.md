@@ -5,17 +5,25 @@ Un proyecto Flutter en desarrollo para un **bastón inteligente con Bluetooth**.
 📖 [Documentación Completa](./DOCUMENTACION.md)
 
 ## ✅ Estado del Proyecto
-- Actualización #3 (en progreso):
-  - Integración inicial de Bluetooth (falta terminar configuración)
-  - Página de mapa agregada (falta configurar)
-  - Conexión con la base de datos en desarrollo
+- Actualización #4:
+  - Página de **Login (UI)** creada (sin lógica aún).
+  - Página de **Dispositivos** completada (pendientes pruebas con el bastón para obtener ubicación).
+  - Página de **Ubicación** en desarrollo (pendiente).
+  - Página de **Ajustes** en desarrollo (pendiente).
+
+- Actualización #3:
+  - Integración de Bluetooth (falta terminar configuración).
+  - Página de mapa agregada (falta configurar).
+  - Conexión con la base de datos en desarrollo.
 
 - Actualización #2:
-  - Navegación funcional implementada
-  - Páginas básicas creadas: Inicio, Dispositivos, Cuidadores, Ubicación, Gestión del bastón
-  - Base de datos local lista con **SQLite encriptado**
-  - Seguridad añadida: clave de cifrado y módulo `secure.dart`
+  - Navegación funcional implementada.
+  - Páginas básicas creadas: Inicio, Dispositivos, Cuidadores, Ubicación, Gestión del bastón.
+  - Base de datos local lista con **SQLite encriptado**.
+  - Seguridad añadida: clave de cifrado y módulo `secure.dart`.
 
+- Actualización #1:
+  - Primer commit inicial del proyecto.
 
 ## 📌 Objetivo
 Desarrollar una aplicación móvil que permita a los usuarios gestionar:
@@ -35,4 +43,4 @@ Desarrollar una aplicación móvil que permita a los usuarios gestionar:
   Correo: dfoyainfo@fafi.utb.edu.ec
 
 - **Moi**  
-  Correo: alvaradomoises2004@gmail.com  
+  Correo: alvaradomoises2004@gmail.com
