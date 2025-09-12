@@ -37,6 +37,30 @@ Desarrollar una aplicación móvil que permita a los usuarios gestionar:
 - Dart
 - SQLite (encriptado)
 
+## 📱 Capturas de la Aplicación
+
+### Pantalla de Login
+<img src="./assets/screenshots/Login_01.jpg" alt="Login" width="300"/>
+
+### Pantalla de Dispositivos
+<img src="./assets/screenshots/Bluetooth_01.jpg" alt="Dispositivos" width="300"/>
+<img src="./assets/screenshots/Bluetooth_02.jpg" alt="Dispositivos" width="300"/>
+<img src="./assets/screenshots/Bluetooth_03.jpg" alt="Dispositivos" width="300"/>
+
+### Pantalla de Cuidadores
+<img src="./assets/screenshots/Cuidadores_01.jpg" alt="Cuidadores" width="300"/>
+<img src="./assets/screenshots/Cuidadores_02.jpg" alt="Cuidadores" width="300"/>
+<img src="./assets/screenshots/Cuidadores_03.jpg" alt="Cuidadores" width="300"/>
+
+### Pantalla de Ajustes
+<img src="./assets/screenshots/Ajuste_01.jpg" alt="Ajustes" width="300"/>
+
+### Pantalla de Inicio
+<img src="./assets/screenshots/Inicio_01.jpg" alt="Inicio" width="300"/>
+
+### Pantalla de Mapa
+<img src="./assets/screenshots/Mapa_01.jpg" alt="Mapa" width="300"/>
+
 ## 👥 Autores
 
 - **Kuro**  
