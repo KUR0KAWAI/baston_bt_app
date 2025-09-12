@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 
@@ -11,270 +10,170 @@ class DispositivosPage extends StatefulWidget {
 }
 
 class _DispositivosPageState extends State<DispositivosPage> {
-  bool _bluetoothActivado = false;
-  bool _scanning = false;
-  List<BluetoothDevice> _sincronizados = [];
-  List<BluetoothDiscoveryResult> _disponibles = [];
-  StreamSubscription<BluetoothDiscoveryResult>? _escaneoSub;
+  BluetoothState _bluetoothState = BluetoothState.UNKNOWN;
+  BluetoothDevice? _dispositivoConectado;
+  bool _inicializado = false;
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
-    _verificarBluetooth();
-  }
-
-  Future<void> _verificarBluetooth() async {
-    final activado = await FlutterBluetoothSerial.instance.isEnabled ?? false;
-    setState(() => _bluetoothActivado = activado);
-
-    if (_bluetoothActivado) {
-      _cargarDispositivosSincronizados();
-      _iniciarEscaneo();
-    }
-  }
-
-  Future<void> _abrirAjustesBluetooth() async {
-    await FlutterBluetoothSerial.instance.openSettings();
-    await Future.delayed(const Duration(seconds: 2));
-    _verificarBluetooth();
-  }
-
-  Future<void> _cargarDispositivosSincronizados() async {
-    final list = await FlutterBluetoothSerial.instance.getBondedDevices();
-    setState(() => _sincronizados = list);
-  }
-
-  Future<void> _iniciarEscaneo() async {
-    setState(() {
-      _disponibles.clear();
-      _scanning = true;
-    });
-
-    _escaneoSub =
-        FlutterBluetoothSerial.instance.startDiscovery().listen((r) {
-          final i =
-          _disponibles.indexWhere((e) => e.device.address == r.device.address);
-          if (i == -1) {
-            setState(() => _disponibles.add(r));
-          } else {
-            setState(() => _disponibles[i] = r);
-          }
-        });
-
-    // Detener escaneo luego de 20 segundos
-    Future.delayed(const Duration(seconds: 20), () {
-      _escaneoSub?.cancel();
-      setState(() => _scanning = false);
-    });
-  }
-
-  Future<void> _sincronizar(BluetoothDevice device) async {
-    try {
-      await FlutterBluetoothSerial.instance
-          .bondDeviceAtAddress(device.address);
-
-      final refreshed =
-      await FlutterBluetoothSerial.instance.getBondedDevices();
-      final encontrado =
-      refreshed.any((d) => d.address == device.address);
-
-      if (encontrado) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Sincronizado con ${device.name}')),
-        );
-        _cargarDispositivosSincronizados();
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al sincronizar con ${device.name}')),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
-    }
-  }
-
-  Future<void> _olvidar(BluetoothDevice device) async {
-    try {
-      await FlutterBluetoothSerial.instance
-          .removeDeviceBondWithAddress(device.address);
-
-      final refreshed =
-      await FlutterBluetoothSerial.instance.getBondedDevices();
-      final sigue = refreshed.any((d) => d.address == device.address);
-
-      if (!sigue) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Olvidado: ${device.name}')),
-        );
-        _cargarDispositivosSincronizados();
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al olvidar: ${device.name}')),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al olvidar: $e')),
-      );
-    }
-  }
-
-  Widget _buildListaSincronizados() {
-    if (_sincronizados.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 12),
-        child: Center(child: Text('No hay dispositivos sincronizados.')),
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: _sincronizados.map((d) {
-        return Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: ListTile(
-            leading: const Icon(Icons.bluetooth_connected),
-            title: Text(d.name ?? 'Desconocido'),
-            subtitle: Text(d.address),
-            trailing: Wrap(
-              spacing: 8,
-              children: [
-                ElevatedButton(
-                  onPressed: () => _olvidar(d),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-                  child: const Text('Olvidar'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    // Conexión RFCOMM futura
-                  },
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-                  child: const Text('Conectar'),
-                ),
-              ],
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildListaDisponibles() {
-    if (_disponibles.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 12),
-        child: Center(child: Text('No se detectaron dispositivos.')),
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: _disponibles.map((r) {
-        return Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: ListTile(
-            leading: const Icon(Icons.bluetooth_searching),
-            title: Text(r.device.name ?? 'Desconocido'),
-            subtitle: Text(r.device.address),
-            trailing: ElevatedButton(
-              onPressed: () => _sincronizar(r.device),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-              child: const Text('Sincronizar'),
-            ),
-          ),
-        );
-      }).toList(),
-    );
+    _verificarEstadoBluetooth();
+    _iniciarVerificacionPeriodica();
   }
 
   @override
   void dispose() {
-    _escaneoSub?.cancel();
+    _timer?.cancel();
     super.dispose();
+  }
+
+  void _verificarEstadoBluetooth() async {
+    _bluetoothState = await FlutterBluetoothSerial.instance.state;
+    FlutterBluetoothSerial.instance.onStateChanged().listen((state) {
+      setState(() {
+        _bluetoothState = state;
+      });
+      if (state == BluetoothState.STATE_ON) {
+        _verificarConexion();
+      } else {
+        setState(() {
+          _dispositivoConectado = null;
+        });
+      }
+    });
+
+    if (_bluetoothState == BluetoothState.STATE_ON) {
+      _verificarConexion();
+    }
+
+    setState(() {
+      _inicializado = true;
+    });
+  }
+
+  void _iniciarVerificacionPeriodica() {
+    _timer = Timer.periodic(const Duration(seconds: 3), (_) {
+      if (_bluetoothState == BluetoothState.STATE_ON) {
+        _verificarConexion();
+      }
+    });
+  }
+
+  void _verificarConexion() async {
+    final bonded = await FlutterBluetoothSerial.instance.getBondedDevices();
+    for (var device in bonded) {
+      if (await device.isConnected) {
+        if (_dispositivoConectado?.address != device.address) {
+          setState(() {
+            _dispositivoConectado = device;
+          });
+        }
+        return;
+      }
+    }
+
+    if (_dispositivoConectado != null) {
+      setState(() {
+        _dispositivoConectado = null;
+      });
+    }
+  }
+
+  void _abrirAjustesBluetooth() {
+    FlutterBluetoothSerial.instance.openSettings();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!_inicializado) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dispositivos'),
+        title: const Text("Dispositivos"),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () async {
-              await _verificarBluetooth();
-            },
+            onPressed: _verificarEstadoBluetooth,
+          )
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: _bluetoothState == BluetoothState.STATE_OFF
+            ? _buildBluetoothApagado()
+            : _dispositivoConectado != null
+            ? _buildDispositivoConectado()
+            : _buildNoConectado(),
+      ),
+    );
+  }
+
+  Widget _buildBluetoothApagado() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.bluetooth_disabled, size: 72, color: Colors.grey),
+          const SizedBox(height: 16),
+          const Text(
+            "Bluetooth está apagado.",
+            style: TextStyle(fontSize: 18),
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton(
+            onPressed: _abrirAjustesBluetooth,
+            child: const Text("Activar Bluetooth"),
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          await _verificarBluetooth();
-        },
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            if (!_bluetoothActivado) ...[
-              const Text(
-                'Activa Bluetooth para detectar dispositivos cercanos.',
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              Center(
-                child: ElevatedButton.icon(
-                  onPressed: _abrirAjustesBluetooth,
-                  icon: const Icon(Icons.bluetooth),
-                  label: const Text('Abrir ajustes de Bluetooth'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.deepPurple,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-                ),
-              ),
-            ] else ...[
-              if (_scanning) ...[
-                const LinearProgressIndicator(),
-                const SizedBox(height: 8),
-                const Center(child: Text('Buscando dispositivos...')),
-                const SizedBox(height: 12),
-              ],
-              const Text(
-                'Dispositivos sincronizados',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              _buildListaSincronizados(),
-              const Divider(),
-              const Text(
-                'Dispositivos disponibles',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              _buildListaDisponibles(),
-            ],
-          ],
-        ),
+    );
+  }
+
+  Widget _buildDispositivoConectado() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.bluetooth_connected, size: 72, color: Colors.blue),
+          const SizedBox(height: 16),
+          const Text(
+            "Dispositivo conectado:",
+            style: TextStyle(fontSize: 18),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            _dispositivoConectado!.name ?? "Sin nombre",
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
+          Text(
+            _dispositivoConectado!.address,
+            style: const TextStyle(fontSize: 16),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoConectado() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.bluetooth_searching, size: 72, color: Colors.grey),
+          const SizedBox(height: 16),
+          const Text(
+            "No hay dispositivo conectado.",
+            style: TextStyle(fontSize: 18),
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton(
+            onPressed: _abrirAjustesBluetooth,
+            child: const Text("Abrir ajustes Bluetooth"),
+          ),
+        ],
       ),
     );
   }

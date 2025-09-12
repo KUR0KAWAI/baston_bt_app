@@ -7,7 +7,7 @@ import 'inicio_page.dart';
 import 'cuidadores_page.dart';
 import 'dispositivos_page.dart';
 import 'ubicacion_page.dart';
-import 'gestion_baston_page.dart'; // la usaremos como "Ajustes"
+import 'ajustes_page.dart'; // la usaremos como "Ajustes"
 
 class MenuLayout extends StatefulWidget {
   const MenuLayout({super.key});
@@ -25,7 +25,7 @@ class _MenuLayoutState extends State<MenuLayout> {
     CuidadoresPage(),
     DispositivosPage(),
     UbicacionPage(),
-    GestionBastonPage(), // se muestra como "Ajustes"
+    AjustesPage(), // se muestra como "Ajustes"
   ];
 
   @override
