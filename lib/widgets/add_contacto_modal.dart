@@ -1,26 +1,26 @@
 import 'package:flutter/material.dart';
 
-class AddCuidadorModal extends StatefulWidget {
-  final void Function(String) onEnviarSolicitud;
+class AddContactoModal extends StatefulWidget {
+  final void Function(String) onEnviarInvitacion;
 
-  const AddCuidadorModal({super.key, required this.onEnviarSolicitud});
+  const AddContactoModal({super.key, required this.onEnviarInvitacion});
 
   @override
-  State<AddCuidadorModal> createState() => _AddCuidadorModalState();
+  State<AddContactoModal> createState() => _AddContactoModalState();
 }
 
-class _AddCuidadorModalState extends State<AddCuidadorModal> {
+class _AddContactoModalState extends State<AddContactoModal> {
   final _controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      title: const Text('Agregar Cuidador'),
+      title: const Text('Agregar contacto de confianza'),
       content: TextField(
         controller: _controller,
         decoration: const InputDecoration(
-            hintText: 'Ingrese el nombre del cuidador...'
+          hintText: 'Ingrese el nombre del contacto de confianza...',
         ),
       ),
       actions: [
@@ -32,11 +32,11 @@ class _AddCuidadorModalState extends State<AddCuidadorModal> {
           onPressed: () {
             final nombre = _controller.text.trim();
             if (nombre.isNotEmpty) {
-              widget.onEnviarSolicitud(nombre);
+              widget.onEnviarInvitacion(nombre);
               Navigator.pop(context);
             }
           },
-          child: const Text('Enviar solicitud'),
+          child: const Text('Enviar invitación'),
         ),
       ],
     );

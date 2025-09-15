@@ -12,12 +12,15 @@ class BottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context); // 👈 accedemos al tema global
+
     return BottomNavigationBar(
       currentIndex: currentIndex,
       onTap: onTap,
       type: BottomNavigationBarType.fixed,
-      selectedItemColor: Colors.deepPurple,
-      unselectedItemColor: Colors.grey,
+      selectedItemColor: theme.bottomNavigationBarTheme.selectedItemColor,   // 👈 desde tema
+      unselectedItemColor: theme.bottomNavigationBarTheme.unselectedItemColor, // 👈 desde tema
+      backgroundColor: theme.bottomNavigationBarTheme.backgroundColor,       // 👈 desde tema
       showUnselectedLabels: true,
       items: const [
         BottomNavigationBarItem(
@@ -25,8 +28,8 @@ class BottomNavBar extends StatelessWidget {
           label: 'Inicio',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.group),
-          label: 'Cuidadores',
+          icon: Icon(Icons.verified_user),
+          label: 'Confianza',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.bluetooth),
@@ -37,8 +40,8 @@ class BottomNavBar extends StatelessWidget {
           label: 'Ubicación',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.warning_amber),
-          label: 'Emergencia',
+          icon: Icon(Icons.settings),
+          label: 'Ajustes',
         ),
       ],
     );

@@ -8,12 +8,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+// 👇 Importa tu main.dart para usar MyApp y defaultRol
 import 'package:baston_bt_app/main.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const MyApp(rol: defaultRol));
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);

@@ -1,16 +1,23 @@
-// lib/pages/menu_layout.dart
 import 'package:flutter/material.dart';
 import '../services/db_bootstrap.dart';
 
-// Importa tus páginas reales
+// Importa tus páginas de usuario
+import 'user/user_confianza_page.dart';
+import 'user/user_dispositivos_page.dart';
+import 'user/user_ubicacion_page.dart';
+
+// Importa tus páginas de contacto
+import 'contact/contact_confianza_page.dart';
+import 'contact/contact_ubicacion_page.dart';
+
+// Comunes
 import 'inicio_page.dart';
-import 'cuidadores_page.dart';
-import 'dispositivos_page.dart';
-import 'ubicacion_page.dart';
-import 'ajustes_page.dart'; // la usaremos como "Ajustes"
+import 'ajustes_page.dart';
 
 class MenuLayout extends StatefulWidget {
-  const MenuLayout({super.key});
+  final String rol; // "usuario" o "confianza"
+
+  const MenuLayout({super.key, required this.rol});
 
   @override
   State<MenuLayout> createState() => _MenuLayoutState();
@@ -18,21 +25,47 @@ class MenuLayout extends StatefulWidget {
 
 class _MenuLayoutState extends State<MenuLayout> {
   int _selectedIndex = 0;
-
-  // Orden: Inicio, Cuidadores, Dispositivos (centrado), Ubicación, Ajustes
-  final List<Widget> _pages = const [
-    InicioPage(),
-    CuidadoresPage(),
-    DispositivosPage(),
-    UbicacionPage(),
-    AjustesPage(), // se muestra como "Ajustes"
-  ];
+  late List<Widget> _pages;
+  late List<BottomNavigationBarItem> _items;
 
   @override
   void initState() {
     super.initState();
-    // Inicializa la BD en background (no modifica tu UI)
+
+    // Inicializa la BD en background
     DbBootstrap.init();
+
+    if (widget.rol == "usuario") {
+      // 🔹 Menú del Usuario
+      _pages = [
+        InicioPage(rol: widget.rol),
+        const UserConfianzaPage(),
+        const UserDispositivosPage(),
+        const UserUbicacionPage(),
+        const AjustesPage(),
+      ];
+      _items = const [
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
+        BottomNavigationBarItem(icon: Icon(Icons.verified_user), label: 'Confianza'),
+        BottomNavigationBarItem(icon: Icon(Icons.bluetooth), label: 'Dispositivos'),
+        BottomNavigationBarItem(icon: Icon(Icons.location_on), label: 'Ubicación'),
+        BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Ajustes'),
+      ];
+    } else {
+      // 🔹 Menú del Contacto de confianza
+      _pages = [
+        InicioPage(rol: widget.rol),
+        const ContactConfianzaPage(),
+        const ContactUbicacionPage(),
+        const AjustesPage(),
+      ];
+      _items = const [
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
+        BottomNavigationBarItem(icon: Icon(Icons.notifications), label: 'Confianza'),
+        BottomNavigationBarItem(icon: Icon(Icons.location_on), label: 'Ubicación'),
+        BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Ajustes'),
+      ];
+    }
   }
 
   void _onItemTapped(int index) {
@@ -41,42 +74,21 @@ class _MenuLayoutState extends State<MenuLayout> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      // Tu contenido real, conservando estado por pestaña
       body: IndexedStack(
         index: _selectedIndex,
         children: _pages,
       ),
-
-      // Bottom nav de 5 pestañas (Dispositivos centrado)
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
-        selectedItemColor: Colors.deepPurple,
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Inicio',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.group),
-            label: 'Cuidadores',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.bluetooth),
-            label: 'Dispositivos',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.location_on),
-            label: 'Ubicación',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Ajustes',
-          ),
-        ],
+        selectedItemColor: theme.bottomNavigationBarTheme.selectedItemColor,
+        unselectedItemColor: theme.bottomNavigationBarTheme.unselectedItemColor,
+        backgroundColor: theme.bottomNavigationBarTheme.backgroundColor,
+        items: _items,
       ),
     );
   }

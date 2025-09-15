@@ -2,14 +2,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 
-class DispositivosPage extends StatefulWidget {
-  const DispositivosPage({super.key});
+class UserDispositivosPage extends StatefulWidget {
+  const UserDispositivosPage({super.key});
 
   @override
-  State<DispositivosPage> createState() => _DispositivosPageState();
+  State<UserDispositivosPage> createState() => _UserDispositivosPageState();
 }
 
-class _DispositivosPageState extends State<DispositivosPage> {
+class _UserDispositivosPageState extends State<UserDispositivosPage> {
   BluetoothState _bluetoothState = BluetoothState.UNKNOWN;
   BluetoothDevice? _dispositivoConectado;
   bool _inicializado = false;
@@ -92,7 +92,7 @@ class _DispositivosPageState extends State<DispositivosPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Dispositivos"),
+        title: const Text("Dispositivos - Usuario"),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),

@@ -4,14 +4,14 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
 
-class UbicacionPage extends StatefulWidget {
-  const UbicacionPage({super.key});
+class UserUbicacionPage extends StatefulWidget {
+  const UserUbicacionPage({super.key});
 
   @override
-  State<UbicacionPage> createState() => _UbicacionPageState();
+  State<UserUbicacionPage> createState() => _UserUbicacionPageState();
 }
 
-class _UbicacionPageState extends State<UbicacionPage> {
+class _UserUbicacionPageState extends State<UserUbicacionPage> {
   LatLng? ubicacionActual;
   String direccion = 'Babahoyo, Ecuador';
 
@@ -41,15 +41,14 @@ class _UbicacionPageState extends State<UbicacionPage> {
         final lon = coords[0];
         final lat = coords[1];
 
-        print('Coords de "$direccion": lat=$lat, lon=$lon');
         setState(() {
           ubicacionActual = LatLng(lat, lon);
         });
       } else {
-        print('Error al consultar ORS: ${response.body}');
+        debugPrint('Error al consultar ORS: ${response.body}');
       }
     } catch (e) {
-      print('Error ORS: $e');
+      debugPrint('Error ORS: $e');
     }
   }
 
@@ -57,7 +56,7 @@ class _UbicacionPageState extends State<UbicacionPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ubicación'),
+        title: const Text('Ubicación - Usuario'),
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
@@ -107,7 +106,8 @@ class _UbicacionPageState extends State<UbicacionPage> {
                 ),
                 children: [
                   TileLayer(
-                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    urlTemplate:
+                    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                     userAgentPackageName: 'com.example.baston_bt_app',
                   ),
                   MarkerLayer(
@@ -116,7 +116,11 @@ class _UbicacionPageState extends State<UbicacionPage> {
                         point: ubicacionActual!,
                         width: 40,
                         height: 40,
-                        child: const Icon(Icons.location_pin, color: Colors.red, size: 40),
+                        child: const Icon(
+                          Icons.location_pin,
+                          color: Colors.red,
+                          size: 40,
+                        ),
                       ),
                     ],
                   ),
