@@ -7,45 +7,35 @@ Un proyecto Flutter en desarrollo para un **bastón inteligente con Bluetooth**.
 
 
 ## ✅ Estado del Proyecto
+### 🔹 Actualización #6:
+  - Página de **Ubicación de Usuario** actualizada.
+  - Integración de **TTS (Text-to-Speech)** para ciertos eventos.
+  - Redirección a **Google Maps** al hacer clic en una zona segura registrada, mostrando recorrido e indicaciones.
 
-### 🔹 Actualización #5: Organización del proyecto
+### 🔹 Actualización #5:
+  - Organización del proyecto en carpetas.
+  - Nuevos widgets: `login_form.dart`, `register_form.dart`, `loading_walking_widget.dart`.
+  - Refactor general para mejorar la legibilidad y el mantenimiento.
 
-* Reorganización de la estructura en carpetas:
+### 🔹 Actualización #4:
+  - Página de **Login (UI)** creada (sin lógica aún).
+  - Página de **Dispositivos** completada (pendientes pruebas con el bastón para obtener ubicación).
+  - Página de **Ubicación** en desarrollo (pendiente).
+  - Página de **Ajustes** en desarrollo (pendiente).
 
-  * `lib/pages/contact/` → páginas de contactos de confianza.
-  * `lib/pages/user/` → páginas de usuario (dispositivos, confianza, ubicación).
-  * `lib/widgets/` → formularios y componentes reutilizables.
-  * `lib/theme/` → configuración de temas (colores, tipografías, estilos globales).
-* Nuevos widgets:
+### 🔹 Actualización #3:
+  - Integración de Bluetooth (falta terminar configuración).
+  - Página de mapa agregada (falta configurar).
+  - Conexión con la base de datos en desarrollo.
 
-  * `login_form.dart`
-  * `register_form.dart`
-  * `loading_walking_widget.dart`
-* Refactor general para mejorar la legibilidad y el mantenimiento.
+### 🔹 Actualización #2:
+  - Navegación funcional implementada.
+  - Páginas básicas creadas: Inicio, Dispositivos, Cuidadores, Ubicación, Gestión del bastón.
+  - Base de datos local lista con **SQLite encriptado**.
+  - Seguridad añadida: clave de cifrado y módulo `secure.dart`.
 
-### 🔹 Actualización #4
-
-* Página de **Login (UI)** creada (sin lógica aún).
-* Página de **Dispositivos** completada (pendientes pruebas con el bastón para obtener ubicación).
-* Página de **Ubicación** en desarrollo (pendiente).
-* Página de **Ajustes** en desarrollo (pendiente).
-
-### 🔹 Actualización #3
-
-* Integración inicial de **Bluetooth** (falta terminar configuración).
-* Página de **Mapa** agregada (falta configurar).
-* Conexión con la **base de datos** en desarrollo.
-
-### 🔹 Actualización #2
-
-* Navegación funcional implementada.
-* Páginas básicas creadas: **Inicio, Dispositivos, Cuidadores, Ubicación, Gestión del bastón**.
-* Base de datos local lista con **SQLite encriptado**.
-* Seguridad añadida: clave de cifrado y módulo `secure.dart`.
-
-### 🔹 Actualización #1
-
-* Primer commit inicial del proyecto.
+### 🔹 Actualización #1:
+  - Primer commit inicial del proyecto.
 
 
 ## 📌 Objetivo

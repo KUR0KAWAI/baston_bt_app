@@ -1,8 +1,11 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter_tts/flutter_tts.dart';  // 🎤 librería TTS
+import '../../models/zona_segura.dart';
+import '../../widgets/mapa_widget.dart';
+import '../../widgets/zonas_seguras_list.dart';
+import '../../widgets/historial_list_map.dart';
+import '../../widgets/add_zona_segura_dialog.dart';
 
 class UserUbicacionPage extends StatefulWidget {
   const UserUbicacionPage({super.key});
@@ -13,42 +16,48 @@ class UserUbicacionPage extends StatefulWidget {
 
 class _UserUbicacionPageState extends State<UserUbicacionPage> {
   LatLng? ubicacionActual;
-  String direccion = 'Babahoyo, Ecuador';
+  final List<LatLng> recorrido = [];
+  final List<ZonaSegura> zonasSeguras = [];
+  bool bastonConectado = false;
 
-  // 🔐 Pega aquí tu API KEY de OpenRouteService:
-  final String apiKey = 'eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImE5NzBmOWEyMGFlODRhZWQ5NWEyYTRlMDhmMjZiODQzIiwiaCI6Im11cm11cjY0In0='; // ← Reemplaza este valor
-
-  final TextEditingController direccionController = TextEditingController();
+  final FlutterTts flutterTts = FlutterTts(); // 🎤 instancia de TTS
 
   @override
   void initState() {
     super.initState();
-    direccionController.text = direccion;
-    obtenerUbicacionDesdeDireccion(direccion);
+    _initTts(); // 👈 inicializamos TTS al arrancar
+    // 📌 Simulación sin bastón
+    setState(() {
+      bastonConectado = true;
+      ubicacionActual = LatLng(-1.8019, -79.5344); // Ejemplo: Babahoyo
+      recorrido.add(ubicacionActual!);
+    });
   }
 
-  Future<void> obtenerUbicacionDesdeDireccion(String direccion) async {
-    final url = Uri.parse(
-      'https://api.openrouteservice.org/geocode/search?api_key=$apiKey&text=$direccion',
+  Future<void> _initTts() async {
+    await flutterTts.setLanguage("es-ES"); // español
+    await flutterTts.setPitch(1.0);        // tono normal
+    await flutterTts.setSpeechRate(0.5);   // velocidad moderada
+  }
+
+  Future<void> agregarZonaSegura(LatLng punto) async {
+    final nombre = await showDialog<String>(
+      context: context,
+      builder: (_) => const AddZonaSeguraDialog(),
     );
 
-    try {
-      final response = await http.get(url);
+    if (nombre != null && nombre.isNotEmpty) {
+      setState(() {
+        zonasSeguras.add(ZonaSegura(nombre: nombre, posicion: punto));
+      });
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final coords = data['features'][0]['geometry']['coordinates'];
-        final lon = coords[0];
-        final lat = coords[1];
+      // 📢 SnackBar en pantalla
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("✅ Zona segura '$nombre' registrada")),
+      );
 
-        setState(() {
-          ubicacionActual = LatLng(lat, lon);
-        });
-      } else {
-        debugPrint('Error al consultar ORS: ${response.body}');
-      }
-    } catch (e) {
-      debugPrint('Error ORS: $e');
+      // 🎤 Voz TTS
+      await flutterTts.speak("Zona segura $nombre registrada");
     }
   }
 
@@ -56,109 +65,94 @@ class _UserUbicacionPageState extends State<UserUbicacionPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ubicación - Usuario'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            tooltip: 'Buscar dirección',
-            onPressed: () {
-              obtenerUbicacionDesdeDireccion(direccionController.text);
-            },
+        title: const Text("Ubicación - Usuario"),
+        centerTitle: true,
+        elevation: 2,
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          // 🗺️ MAPA en tarjeta
+          Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            elevation: 4,
+            clipBehavior: Clip.antiAlias,
+            child: SizedBox(
+              height: 250,
+              child: MapaWidget(
+                ubicacionActual: ubicacionActual,
+                recorrido: recorrido,
+                zonasSeguras: zonasSeguras,
+                bastonConectado: bastonConectado,
+                onTapMapa: agregarZonaSegura,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 8),
+
+          // 📍 Texto debajo del mapa
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                ubicacionActual != null ? Icons.check_circle : Icons.error,
+                color: ubicacionActual != null ? Colors.green : Colors.red,
+                size: 20,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                ubicacionActual != null
+                    ? "Última posición obtenida del bastón"
+                    : "No se ha obtenido la ubicación del bastón",
+                style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: ubicacionActual != null
+                      ? Colors.green
+                      : Colors.red,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          // 📍 ZONAS SEGURAS
+          Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            elevation: 3,
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: ZonasSegurasList(
+                zonasSeguras: zonasSeguras,
+                // 👇 ahora le paso el callback al hijo
+                onEliminarZona: (zona) {
+                  setState(() {
+                    zonasSeguras.remove(zona); // 🔥 actualiza lista + mapa
+                  });
+                },
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // 📜 HISTORIAL
+          Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            elevation: 3,
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: HistorialListMap(recorrido: recorrido),
+            ),
           ),
         ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              'Mapa / Ubicación Actual',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 10),
-
-            TextField(
-              controller: direccionController,
-              decoration: InputDecoration(
-                labelText: 'Dirección',
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.refresh),
-                  onPressed: () {
-                    obtenerUbicacionDesdeDireccion(direccionController.text);
-                  },
-                ),
-                border: const OutlineInputBorder(),
-              ),
-            ),
-
-            const SizedBox(height: 15),
-
-            SizedBox(
-              height: 200,
-              child: ubicacionActual == null
-                  ? const Center(child: CircularProgressIndicator())
-                  : FlutterMap(
-                options: MapOptions(
-                  initialCenter: ubicacionActual!,
-                  initialZoom: 16.0,
-                ),
-                children: [
-                  TileLayer(
-                    urlTemplate:
-                    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    userAgentPackageName: 'com.example.baston_bt_app',
-                  ),
-                  MarkerLayer(
-                    markers: [
-                      Marker(
-                        point: ubicacionActual!,
-                        width: 40,
-                        height: 40,
-                        child: const Icon(
-                          Icons.location_pin,
-                          color: Colors.red,
-                          size: 40,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 30),
-            const Text(
-              'Zonas Seguras',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 10),
-            ElevatedButton(onPressed: () {}, child: const Text('Hogar')),
-            const SizedBox(height: 10),
-            ElevatedButton(onPressed: () {}, child: const Text('Centro de salud')),
-            const SizedBox(height: 10),
-            OutlinedButton.icon(
-              onPressed: () {},
-              icon: const Icon(Icons.add),
-              label: const Text('Agregar zona segura'),
-            ),
-            const SizedBox(height: 30),
-            const Text(
-              'Historial',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 10),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.black26),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Text('Hoy, 10:20 • Parque'),
-            ),
-          ],
-        ),
       ),
     );
   }
