@@ -4,12 +4,12 @@ import '../services/secure.dart';
 
 class LocalDb {
   static Database? _db;
-  static Future<Database>? _opening; // evita abrir 2 veces al mismo tiempo
+  static Future<Database>? _opening;
   static String? _openedPath;
   static String? get openedPath => _openedPath;
 
   static const _dbName = 'baston.db';
-  static const _version = 1;
+  static const _version = 2;
 
   static Future<Database> instance() async {
     if (_db != null) return _db!;
@@ -34,7 +34,6 @@ class LocalDb {
       password: dbKey,
       version: _version,
       onConfigure: (db) async {
-        // ✅ Lo esencial: integridad referencial
         await db.execute('PRAGMA foreign_keys = ON;');
       },
       onCreate: (db, v) async => _createSchema(db),
@@ -53,7 +52,8 @@ class LocalDb {
         id TEXT PRIMARY KEY,
         email TEXT NOT NULL UNIQUE,
         nombres TEXT, apellidos TEXT,
-        roles TEXT NOT NULL
+        roles TEXT NOT NULL,
+        token TEXT
       )
     ''');
 
@@ -108,16 +108,39 @@ class LocalDb {
   }
 
   static Future<void> _migrate(Database db, int oldV, int newV) async {
-    // Ejemplo: if (oldV < 2) await db.execute('ALTER TABLE ...');
+    if (oldV < 2) {
+      await db.execute('ALTER TABLE usuario_local ADD COLUMN token TEXT');
+    }
   }
 
-  // --------- DAO ---------
+  // -----------------------
+  // 🔹 Helpers para kv_meta
+  // -----------------------
+  static Future<void> setKv(String key, String value) async {
+    final db = await instance();
+    await db.insert("kv_meta", {"k": key, "v": value},
+        conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  static Future<String?> getKv(String key) async {
+    final db = await instance();
+    final res = await db.query("kv_meta", where: "k = ?", whereArgs: [key]);
+    return res.isNotEmpty ? res.first["v"] as String : null;
+  }
+
+  static Future<void> deleteKv(String key) async {
+    final db = await instance();
+    await db.delete("kv_meta", where: "k = ?", whereArgs: [key]);
+  }
+
+  // --------- DAO usuario_local ---------
   static Future<void> upsertUsuarioLocal({
     required String id,
     required String email,
     String? nombres,
     String? apellidos,
     required String rolesJson,
+    required String token,
   }) async {
     final db = await instance();
     await db.insert('usuario_local', {
@@ -126,56 +149,25 @@ class LocalDb {
       'nombres': nombres,
       'apellidos': apellidos,
       'roles': rolesJson,
+      'token': token,
     }, conflictAlgorithm: ConflictAlgorithm.replace);
+
+    // Actualizamos el usuario actual
+    await setKv("usuario_actual", id);
   }
 
-  static Future<void> upsertDispositivo({
-    required String id,
-    required String personaUsuarioId,
-    required String btAddress,
-    String? modelo,
-    String? firmware,
-  }) async {
+  static Future<Map<String, dynamic>?> getUsuarioActual() async {
     final db = await instance();
-    await db.insert('dispositivo_local', {
-      'id': id,
-      'persona_usuario_id': personaUsuarioId,
-      'bt_address': btAddress,
-      'modelo': modelo,
-      'firmware': firmware,
-    }, conflictAlgorithm: ConflictAlgorithm.replace);
+    final res = await db.query("kv_meta", where: "k = ?", whereArgs: ["usuario_actual"]);
+    if (res.isEmpty) return null;
+
+    final userId = res.first["v"] as String;
+    final usuario = await db.query("usuario_local", where: "id = ?", whereArgs: [userId], limit: 1);
+    return usuario.isNotEmpty ? usuario.first : null;
   }
 
-  static Future<int> guardarPosicion({
-    required String dispositivoId,
-    required DateTime ts,
-    required double lat,
-    required double lon,
-    double? precisionM,
-    double? altM,
-    String fuente = 'FUSED',
-  }) async {
-    final db = await instance();
-    return db.insert('posicion_local', {
-      'dispositivo_id': dispositivoId,
-      'ts': ts.toIso8601String(),
-      'lat': lat,
-      'lon': lon,
-      'precision_m': precisionM,
-      'alt_m': altM,
-      'fuente': fuente,
-      'sync_estado': 'PENDIENTE',
-    }, conflictAlgorithm: ConflictAlgorithm.ignore);
-  }
-
-  static Future<List<Map<String, dynamic>>> pendientesPosicion({int limit = 200}) async {
-    final db = await instance();
-    return db.query(
-      'posicion_local',
-      where: 'sync_estado = ?',
-      whereArgs: ['PENDIENTE'],
-      orderBy: 'ts ASC',
-      limit: limit,
-    );
+  static Future<void> logout() async {
+    await deleteKv("usuario_actual");
+    await deleteKv("jwt_token");
   }
 }

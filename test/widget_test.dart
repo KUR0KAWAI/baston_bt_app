@@ -1,31 +1,34 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-// 👇 Importa tu main.dart para usar MyApp y defaultRol
 import 'package:baston_bt_app/main.dart';
+import 'package:baston_bt_app/models/session.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp(rol: defaultRol));
-
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+  setUp(() {
+    // 🔹 Limpia la sesión antes de cada test
+    Session.clear();
   });
+
+  testWidgets('Muestra LoginPage si no hay sesión activa',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(const MyApp());
+
+        // 🔎 Verifica por texto (ajústalo al de tu LoginPage real)
+        expect(find.text('Iniciar Sesión'), findsOneWidget);
+      });
+
+  testWidgets('Muestra MenuLayout si hay sesión activa',
+          (WidgetTester tester) async {
+        Session.start({
+          "userId": "1",
+          "email": "test@example.com",
+          "fullName": "Usuario Test",
+          "rol": "Usuario",
+          "token": "fake-jwt-token",
+        });
+
+        await tester.pumpWidget(const MyApp());
+
+        // 🔎 Verifica que aparece el texto de bienvenida de InicioPage
+        expect(find.textContaining('Bienvenido'), findsOneWidget);
+      });
 }

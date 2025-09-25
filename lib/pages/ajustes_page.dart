@@ -1,12 +1,16 @@
 // lib/pages/ajustes_page.dart
 import 'package:flutter/material.dart';
-import 'login_page.dart'; // Importa tu LoginPage
+import '../services/auth_service.dart'; // 👈 Importamos el servicio de auth
+import 'login_page.dart';
 
 class AjustesPage extends StatelessWidget {
   const AjustesPage({super.key});
 
-  void _cerrarSesion(BuildContext context) {
-    // Por ahora solo navega al LoginPage y reemplaza la pila
+  Future<void> _cerrarSesion(BuildContext context) async {
+    // 🔹 Ejecuta el logout real
+    await AuthService.logout();
+
+    // 🔹 Navega al login y elimina todo el historial
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => const LoginPage()),

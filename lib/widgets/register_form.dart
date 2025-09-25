@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../services/auth_service.dart';
+import '../widgets/loading_walking_widget.dart';
 
 class RegisterForm extends StatefulWidget {
   final VoidCallback onLoginTap;
@@ -10,7 +12,94 @@ class RegisterForm extends StatefulWidget {
 }
 
 class _RegisterFormState extends State<RegisterForm> {
+  final nameCtrl = TextEditingController();
+  final emailCtrl = TextEditingController();
+  final passCtrl = TextEditingController();
+  final confirmCtrl = TextEditingController();
   String? selectedRole;
+
+  Future<void> _handleRegister() async {
+    if (nameCtrl.text.trim().isEmpty ||
+        emailCtrl.text.trim().isEmpty ||
+        passCtrl.text.isEmpty ||
+        confirmCtrl.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Completa todos los campos"),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
+    // 🔹 Validación de longitud mínima
+    if (passCtrl.text.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("La contraseña debe tener mínimo 6 caracteres"),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
+    if (passCtrl.text != confirmCtrl.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Las contraseñas no coinciden"),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
+    if (selectedRole == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Selecciona un tipo de cuenta"),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
+    // 🔹 Normalizar rol ("Usuario" → "usuario", "Contacto" → "contacto")
+    final rol = selectedRole!.toLowerCase();
+
+    // 🔹 Mostrar loader
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) =>
+      const LoadingWalkingWidget(message: "Creando cuenta..."),
+    );
+
+    final ok = await AuthService.register(
+      emailCtrl.text.trim(),
+      passCtrl.text,
+      nameCtrl.text.trim(),
+      rol,
+    );
+
+    if (mounted) Navigator.pop(context); // cerrar loader
+
+    if (ok) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("✅ Registro exitoso, ahora inicia sesión"),
+          backgroundColor: Colors.green,
+        ),
+      );
+      widget.onLoginTap(); // volver a login
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("❌ Error al registrar usuario"),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,47 +130,40 @@ class _RegisterFormState extends State<RegisterForm> {
           style: TextStyle(
             fontSize: 14,
             color: Colors.white70,
-            fontWeight: FontWeight.bold, // Negrita
-            fontStyle: FontStyle.italic, // Cursiva
+            fontWeight: FontWeight.bold,
+            fontStyle: FontStyle.italic,
           ),
         ),
-
         const SizedBox(height: 24),
 
         // Campos
-        _buildTextField("Nombre completo", false),
+        _buildTextField("Nombre completo", false, nameCtrl),
         const SizedBox(height: 16),
-        _buildTextField("Correo electrónico", false),
+        _buildTextField("Correo electrónico", false, emailCtrl),
         const SizedBox(height: 16),
-        _buildTextField("Contraseña", true),
+        _buildTextField("Contraseña", true, passCtrl),
         const SizedBox(height: 16),
-        _buildTextField("Confirmar contraseña", true),
+        _buildTextField("Confirmar contraseña", true, confirmCtrl),
         const SizedBox(height: 16),
 
-        // Selector de rol (usuario / contacto) con estilos corregidos
+        // Selector de rol
         DropdownButtonFormField<String>(
           value: selectedRole,
           icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
           dropdownColor: Colors.white.withOpacity(0.95),
-
-          // Ítems
           items: const [
             DropdownMenuItem(
-              value: "usuario",
+              value: "Usuario",
               child: Text("Usuario",
                   style: TextStyle(color: Colors.black, fontSize: 16)),
             ),
             DropdownMenuItem(
-              value: "contacto",
+              value: "Contacto",
               child: Text("Contacto",
                   style: TextStyle(color: Colors.black, fontSize: 16)),
             ),
           ],
-
-          // Cambio de valor
           onChanged: (value) => setState(() => selectedRole = value),
-
-          // Personalización del "hint" y del valor seleccionado
           selectedItemBuilder: (context) {
             return [
               const Text("Usuario",
@@ -90,13 +172,10 @@ class _RegisterFormState extends State<RegisterForm> {
                   style: TextStyle(color: Colors.white, fontSize: 16)),
             ];
           },
-
-          // 👇 Aquí se controla el hint directamente
           hint: const Text(
             "Seleccione tu tipo de cuenta",
             style: TextStyle(color: Colors.white, fontSize: 16),
           ),
-
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.white.withOpacity(0.2),
@@ -107,7 +186,6 @@ class _RegisterFormState extends State<RegisterForm> {
               borderSide: BorderSide.none,
             ),
           ),
-          style: const TextStyle(color: Colors.white, fontSize: 16),
         ),
 
         const SizedBox(height: 20),
@@ -116,20 +194,7 @@ class _RegisterFormState extends State<RegisterForm> {
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: () {
-              if (selectedRole == null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Selecciona un tipo de cuenta"),
-                    backgroundColor: Colors.redAccent,
-                  ),
-                );
-                return;
-              }
-              // Envía selectedRole junto con los demás campos al backend
-              // Ejemplo: {"nombre": "...", "email": "...", "password": "...", "rol": selectedRole}
-              print("Registrado como rol: $selectedRole");
-            },
+            onPressed: _handleRegister,
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
@@ -165,8 +230,10 @@ class _RegisterFormState extends State<RegisterForm> {
     );
   }
 
-  Widget _buildTextField(String hint, bool obscure) {
+  Widget _buildTextField(
+      String hint, bool obscure, TextEditingController ctrl) {
     return TextField(
+      controller: ctrl,
       obscureText: obscure,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(

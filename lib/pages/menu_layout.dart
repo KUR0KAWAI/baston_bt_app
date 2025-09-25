@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/db_bootstrap.dart';
+import '../models/session.dart'; // 👈 Importamos la sesión
 
 // Importa tus páginas de usuario
 import 'user/user_confianza_page.dart';
@@ -15,9 +16,7 @@ import 'inicio_page.dart';
 import 'ajustes_page.dart';
 
 class MenuLayout extends StatefulWidget {
-  final String rol; // "usuario" o "confianza"
-
-  const MenuLayout({super.key, required this.rol});
+  const MenuLayout({super.key});
 
   @override
   State<MenuLayout> createState() => _MenuLayoutState();
@@ -35,14 +34,17 @@ class _MenuLayoutState extends State<MenuLayout> {
     // Inicializa la BD en background
     DbBootstrap.init();
 
-    if (widget.rol == "usuario") {
-      // 🔹 Menú del Usuario
-      _pages = [
-        InicioPage(rol: widget.rol),
-        const UserConfianzaPage(),
-        const UserDispositivosPage(),
-        const UserUbicacionPage(),
-        const AjustesPage(),
+    // 🔹 Obtenemos el rol desde la sesión
+    final rol = Session.currentUser?.rol ?? "Usuario";
+
+    if (rol == "Usuario") {
+      // Menú del Usuario
+      _pages = const [
+        InicioPage(),
+        UserConfianzaPage(),
+        UserDispositivosPage(),
+        UserUbicacionPage(),
+        AjustesPage(),
       ];
       _items = const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
@@ -52,12 +54,12 @@ class _MenuLayoutState extends State<MenuLayout> {
         BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Ajustes'),
       ];
     } else {
-      // 🔹 Menú del Contacto de confianza
-      _pages = [
-        InicioPage(rol: widget.rol),
-        const ContactConfianzaPage(),
-        const ContactUbicacionPage(),
-        const AjustesPage(),
+      // Menú del Contacto
+      _pages = const [
+        InicioPage(),
+        ContactConfianzaPage(),
+        ContactUbicacionPage(),
+        AjustesPage(),
       ];
       _items = const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),

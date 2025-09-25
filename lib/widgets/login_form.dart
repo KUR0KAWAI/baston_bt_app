@@ -1,29 +1,75 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../widgets/loading_walking_widget.dart'; // 👈 importa tu loader
+import '../services/auth_service.dart';
+import '../widgets/loading_walking_widget.dart';
 
-class LoginForm extends StatelessWidget {
+class LoginForm extends StatefulWidget {
   final VoidCallback onRegisterTap;
 
   const LoginForm({super.key, required this.onRegisterTap});
 
+  @override
+  State<LoginForm> createState() => _LoginFormState();
+}
+
+class _LoginFormState extends State<LoginForm> {
+  final emailCtrl = TextEditingController();
+  final passCtrl = TextEditingController();
+
   Future<void> _handleLogin(BuildContext context) async {
-    // Mostrar loader
+    if (emailCtrl.text.trim().isEmpty || passCtrl.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Completa correo y contraseña"),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
+    // 🔹 Mostrar loader
     showDialog(
       context: context,
-      barrierDismissible: false, // no se cierra al tocar afuera
+      barrierDismissible: false,
       builder: (context) =>
       const LoadingWalkingWidget(message: "Iniciando sesión..."),
     );
 
-    // Simular tiempo de espera mínimo de 3 segundos
-    await Future.delayed(const Duration(seconds: 3));
+    try {
+      final user = await AuthService.login(
+        emailCtrl.text.trim(),
+        passCtrl.text.trim(),
+      );
 
-    // 👉 Aquí podrías poner la lógica real de login (API, DB, etc.)
-    // Por ahora, asumimos que es correcto y cerramos el loader
+      if (mounted) Navigator.pop(context); // cerrar loader
 
-    Navigator.pop(context); // Cierra el loader
-    Navigator.pushReplacementNamed(context, '/menu'); // Ir al menú
+      if (user != null) {
+        // ✅ login exitoso → guardado en LocalDb por AuthService
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Bienvenido ${user['fullName']}"),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pushReplacementNamed(context, '/menu');
+      } else {
+        // ❌ credenciales inválidas
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Credenciales inválidas"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error al iniciar sesión: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -66,9 +112,9 @@ class LoginForm extends StatelessWidget {
         ),
 
         // Campos
-        _buildTextField("Correo electrónico", false),
+        _buildTextField("Correo electrónico", false, emailCtrl),
         const SizedBox(height: 16),
-        _buildTextField("Contraseña", true),
+        _buildTextField("Contraseña", true, passCtrl),
         const SizedBox(height: 20),
 
         // Botón Entrar
@@ -96,10 +142,13 @@ class LoginForm extends StatelessWidget {
             const Text("¿No tienes cuenta? ",
                 style: TextStyle(color: Colors.white70)),
             TextButton(
-              onPressed: onRegisterTap,
+              onPressed: widget.onRegisterTap,
               child: const Text(
                 "Crear una cuenta",
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],
@@ -117,8 +166,10 @@ class LoginForm extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField(String hint, bool obscure) {
+  Widget _buildTextField(
+      String hint, bool obscure, TextEditingController ctrl) {
     return TextField(
+      controller: ctrl,
       obscureText: obscure,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
@@ -126,7 +177,8 @@ class LoginForm extends StatelessWidget {
         hintStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
         filled: true,
         fillColor: Colors.white.withOpacity(0.2),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding:
+        const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30),
           borderSide: BorderSide.none,
