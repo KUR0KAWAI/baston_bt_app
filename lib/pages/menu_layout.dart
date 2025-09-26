@@ -34,10 +34,10 @@ class _MenuLayoutState extends State<MenuLayout> {
     // Inicializa la BD en background
     DbBootstrap.init();
 
-    // 🔹 Obtenemos el rol desde la sesión
-    final rol = Session.currentUser?.rol ?? "Usuario";
+    // 🔹 Obtenemos el rol desde la sesión (normalizado a minúsculas)
+    final rol = (Session.currentUser?.rol ?? "Usuario").toLowerCase();
 
-    if (rol == "Usuario") {
+    if (rol == "usuario") {
       // Menú del Usuario
       _pages = const [
         InicioPage(),
@@ -53,7 +53,7 @@ class _MenuLayoutState extends State<MenuLayout> {
         BottomNavigationBarItem(icon: Icon(Icons.location_on), label: 'Ubicación'),
         BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Ajustes'),
       ];
-    } else {
+    } else if (rol == "contacto") {
       // Menú del Contacto
       _pages = const [
         InicioPage(),
@@ -65,6 +65,13 @@ class _MenuLayoutState extends State<MenuLayout> {
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
         BottomNavigationBarItem(icon: Icon(Icons.notifications), label: 'Confianza'),
         BottomNavigationBarItem(icon: Icon(Icons.location_on), label: 'Ubicación'),
+        BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Ajustes'),
+      ];
+    } else {
+      // 🔹 Fallback si el rol no es válido (carga menú básico)
+      _pages = const [InicioPage(), AjustesPage()];
+      _items = const [
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
         BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Ajustes'),
       ];
     }

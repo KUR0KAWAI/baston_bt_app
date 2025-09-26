@@ -1,6 +1,7 @@
-// lib/pages/ajustes_page.dart
 import 'package:flutter/material.dart';
-import '../services/auth_service.dart'; // 👈 Importamos el servicio de auth
+import 'package:flutter/services.dart'; // 👈 Para copiar al portapapeles
+import '../services/auth_service.dart';
+import '../models/session.dart'; // 👈 Para acceder al usuario logueado
 import 'login_page.dart';
 
 class AjustesPage extends StatelessWidget {
@@ -20,6 +21,8 @@ class AjustesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final usuario = Session.currentUser;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Ajustes"),
@@ -35,7 +38,43 @@ class AjustesPage extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            // Botón para cerrar sesión
+            // 🔹 Apartado Perfil con flecha desplegable
+            ExpansionTile(
+              leading: const Icon(Icons.person),
+              title: const Text(
+                "Perfil",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              children: [
+                ListTile(
+                  title: const Text("Usuario:"),
+                  subtitle: Text(
+                    usuario != null
+                        ? "${usuario.nombres} ${usuario.apellidos}"
+                        : "Sin nombre",
+                  ),
+                ),
+                ListTile(
+                  title: const Text("UUID:"),
+                  subtitle: Text(usuario?.id ?? "No disponible"),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.copy),
+                    onPressed: () {
+                      if (usuario?.id.isNotEmpty ?? false) {
+                        Clipboard.setData(ClipboardData(text: usuario!.id));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("UUID copiado")),
+                        );
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 20),
+
+            // 🔹 Botón para cerrar sesión
             ElevatedButton.icon(
               onPressed: () => _cerrarSesion(context),
               style: ElevatedButton.styleFrom(
